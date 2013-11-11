@@ -1,7 +1,11 @@
 {
-  "name": "angularjs-seed",
-  "description": "A starter project for AngularJS",
-  "repository": "https://github.com/angular/angular-seed",
+  "name": "angularjs-seed-expressJS",
+  "description": "A starter project for AngularJS working with ExpressJS",
+  "repository": "https://github.com/edshadi/angular-seed-expressJS.git",
+  "dependencies": {
+    "express": "~3.1.0",
+    "path": "~0.4.9"
+  },
   "devDependencies": {
     "phantomjs" : "~1.9",
     "karma" : "~0.10",
