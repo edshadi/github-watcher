@@ -1,4 +1,4 @@
-# angular-seed — the seed for AngularJS apps
+# modified angular-seed to work with [expressJS](http://expressjs.com/)
 
 This project is an application skeleton for a typical [AngularJS](http://angularjs.org/) web app.
 You can use it to quickly bootstrap your angular webapp projects and dev environment for these
