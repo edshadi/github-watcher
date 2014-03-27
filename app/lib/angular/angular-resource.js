@@ -1,14 +1,55 @@
 /**
- * @license AngularJS v1.2.0
- * (c) 2010-2012 Google, Inc. http://angularjs.org
+ * @license AngularJS v1.2.15
+ * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
 (function(window, angular, undefined) {'use strict';
 
 var $resourceMinErr = angular.$$minErr('$resource');
 
+// Helper functions and regex to lookup a dotted path on an object
+// stopping at undefined/null.  The path must be composed of ASCII
+// identifiers (just like $parse)
+var MEMBER_NAME_REGEX = /^(\.[a-zA-Z_$][0-9a-zA-Z_$]*)+$/;
+
+function isValidDottedPath(path) {
+  return (path != null && path !== '' && path !== 'hasOwnProperty' &&
+      MEMBER_NAME_REGEX.test('.' + path));
+}
+
+function lookupDottedPath(obj, path) {
+  if (!isValidDottedPath(path)) {
+    throw $resourceMinErr('badmember', 'Dotted member path "@{0}" is invalid.', path);
+  }
+  var keys = path.split('.');
+  for (var i = 0, ii = keys.length; i < ii && obj !== undefined; i++) {
+    var key = keys[i];
+    obj = (obj !== null) ? obj[key] : undefined;
+  }
+  return obj;
+}
+
 /**
- * @ngdoc overview
+ * Create a shallow copy of an object and clear other fields from the destination
+ */
+function shallowClearAndCopy(src, dst) {
+  dst = dst || {};
+
+  angular.forEach(dst, function(value, key){
+    delete dst[key];
+  });
+
+  for (var key in src) {
+    if (src.hasOwnProperty(key) && !(key.charAt(0) === '$' && key.charAt(1) === '$')) {
+      dst[key] = src[key];
+    }
+  }
+
+  return dst;
+}
+
+/**
+ * @ngdoc module
  * @name ngResource
  * @description
  *
@@ -17,7 +58,6 @@ var $resourceMinErr = angular.$$minErr('$resource');
  * The `ngResource` module provides interaction support with RESTful services
  * via the $resource service.
  *
- * {@installModule resource}
  *
  * <div doc-module-components="ngResource"></div>
  *
@@ -25,8 +65,8 @@ var $resourceMinErr = angular.$$minErr('$resource');
  */
 
 /**
- * @ngdoc object
- * @name ngResource.$resource
+ * @ngdoc service
+ * @name $resource
  * @requires $http
  *
  * @description
@@ -62,8 +102,8 @@ var $resourceMinErr = angular.$$minErr('$resource');
  *   If the parameter value is prefixed with `@` then the value of that parameter is extracted from
  *   the data object (useful for non-GET operations).
  *
- * @param {Object.<Object>=} actions Hash with declaration of custom action that should extend the
- *   default set of resource actions. The declaration should be created in the format of {@link
+ * @param {Object.<Object>=} actions Hash with declaration of custom action that should extend
+ *   the default set of resource actions. The declaration should be created in the format of {@link
  *   ng.$http#usage_parameters $http.config}:
  *
  *       {action1: {method:?, params:?, isArray:?, headers:?, ...},
@@ -98,35 +138,37 @@ var $resourceMinErr = angular.$$minErr('$resource');
  *   - **`timeout`** – `{number|Promise}` – timeout in milliseconds, or {@link ng.$q promise} that
  *     should abort the request when resolved.
  *   - **`withCredentials`** - `{boolean}` - whether to set the `withCredentials` flag on the
- *     XHR object. See {@link https://developer.mozilla.org/en/http_access_control#section_5
- *     requests with credentials} for more information.
- *   - **`responseType`** - `{string}` - see {@link
- *     https://developer.mozilla.org/en-US/docs/DOM/XMLHttpRequest#responseType requestType}.
+ *     XHR object. See
+ *     [requests with credentials](https://developer.mozilla.org/en/http_access_control#section_5)
+ *     for more information.
+ *   - **`responseType`** - `{string}` - see
+ *     [requestType](https://developer.mozilla.org/en-US/docs/DOM/XMLHttpRequest#responseType).
  *   - **`interceptor`** - `{Object=}` - The interceptor object has two optional methods -
  *     `response` and `responseError`. Both `response` and `responseError` interceptors get called
  *     with `http response` object. See {@link ng.$http $http interceptors}.
  *
  * @returns {Object} A resource "class" object with methods for the default set of resource actions
  *   optionally extended with custom `actions`. The default set contains these actions:
- *
- *       { 'get':    {method:'GET'},
- *         'save':   {method:'POST'},
- *         'query':  {method:'GET', isArray:true},
- *         'remove': {method:'DELETE'},
- *         'delete': {method:'DELETE'} };
+ *   ```js
+ *   { 'get':    {method:'GET'},
+ *     'save':   {method:'POST'},
+ *     'query':  {method:'GET', isArray:true},
+ *     'remove': {method:'DELETE'},
+ *     'delete': {method:'DELETE'} };
+ *   ```
  *
  *   Calling these methods invoke an {@link ng.$http} with the specified http method,
  *   destination and parameters. When the data is returned from the server then the object is an
  *   instance of the resource class. The actions `save`, `remove` and `delete` are available on it
  *   as  methods with the `$` prefix. This allows you to easily perform CRUD operations (create,
  *   read, update, delete) on server-side data like this:
- *   <pre>
-        var User = $resource('/user/:userId', {userId:'@id'});
-        var user = User.get({userId:123}, function() {
-          user.abc = true;
-          user.$save();
-        });
-     </pre>
+ *   ```js
+ *   var User = $resource('/user/:userId', {userId:'@id'});
+ *   var user = User.get({userId:123}, function() {
+ *     user.abc = true;
+ *     user.$save();
+ *   });
+ *   ```
  *
  *   It is important to realize that invoking a $resource object method immediately returns an
  *   empty reference (object or array depending on `isArray`). Once the data is returned from the
@@ -134,7 +176,7 @@ var $resourceMinErr = angular.$$minErr('$resource');
  *   usually the resource is assigned to a model which is then rendered by the view. Having an empty
  *   object results in no rendering, once the data arrives from the server then the object is
  *   populated with the data and the view automatically re-renders itself showing the new data. This
- *   means that in most case one never has to write a callback function for the action methods.
+ *   means that in most cases one never has to write a callback function for the action methods.
  *
  *   The action methods on the class object or instance object can be invoked with the following
  *   parameters:
@@ -170,7 +212,7 @@ var $resourceMinErr = angular.$$minErr('$resource');
  *
  * # Credit card resource
  *
- * <pre>
+ * ```js
      // Define CreditCard class
      var CreditCard = $resource('/user/:userId/card/:cardId',
       {userId:123, cardId:'@id'}, {
@@ -201,9 +243,9 @@ var $resourceMinErr = angular.$$minErr('$resource');
      newCard.name = "Mike Smith";
      newCard.$save();
      // POST: /user/123/card {number:'0123', name:'Mike Smith'}
-     // server returns: {id:789, number:'01234', name: 'Mike Smith'};
+     // server returns: {id:789, number:'0123', name: 'Mike Smith'};
      expect(newCard.id).toEqual(789);
- * </pre>
+ * ```
  *
  * The object returned from this function execution is a resource "class" which has "static" method
  * for each action in the definition.
@@ -214,19 +256,19 @@ var $resourceMinErr = angular.$$minErr('$resource');
  * all of the non-GET methods are available with `$` prefix. This allows you to easily support CRUD
  * operations (create, read, update, delete) on server-side data.
 
-   <pre>
+   ```js
      var User = $resource('/user/:userId', {userId:'@id'});
-     var user = User.get({userId:123}, function() {
+     User.get({userId:123}, function(user) {
        user.abc = true;
        user.$save();
      });
-   </pre>
+   ```
  *
  * It's worth noting that the success callback for `get`, `query` and other methods gets passed
  * in the response that came from the server as well as $http header getter function, so one
  * could rewrite the above example and get access to http headers as:
  *
-   <pre>
+   ```js
      var User = $resource('/user/:userId', {userId:'@id'});
      User.get({userId:123}, function(u, getResponseHeaders){
        u.abc = true;
@@ -235,62 +277,50 @@ var $resourceMinErr = angular.$$minErr('$resource');
          //putResponseHeaders => $http header getter
        });
      });
-   </pre>
+   ```
+ *
+ * You can also access the raw `$http` promise via the `$promise` property on the object returned
+ *
+   ```
+     var User = $resource('/user/:userId', {userId:'@id'});
+     User.get({userId:123})
+         .$promise.then(function(user) {
+           $scope.user = user;
+         });
+   ```
 
- * # Buzz client
-
-   Let's look at what a buzz client created with the `$resource` service looks like:
-    <doc:example>
-    <doc:source jsfiddle="false">
-    <script>
-     function BuzzController($resource) {
-       this.userId = 'googlebuzz';
-       this.Activity = $resource(
-         'https://www.googleapis.com/buzz/v1/activities/:userId/:visibility/:activityId/:comments',
-         {alt:'json', callback:'JSON_CALLBACK'},
-         {
-           get:{method:'JSONP', params:{visibility:'@self'}},
-           replies: {method:'JSONP', params:{visibility:'@self', comments:'@comments'}}
-         }
-       );
-     }
-
-     BuzzController.prototype = {
-       fetch: function() {
-         this.activities = this.Activity.get({userId:this.userId});
-       },
-       expandReplies: function(activity) {
-         activity.replies = this.Activity.replies({userId:this.userId, activityId:activity.id});
-       }
-     };
-     BuzzController.$inject = ['$resource'];
-    </script>
-
-    <div ng-controller="BuzzController">
-     <input ng-model="userId"/>
-     <button ng-click="fetch()">fetch</button>
-     <hr/>
-     <div ng-repeat="item in activities.data.items">
-       <h1 style="font-size: 15px;">
-         <img src="{{item.actor.thumbnailUrl}}" style="max-height:30px;max-width:30px;"/>
-         <a href="{{item.actor.profileUrl}}">{{item.actor.name}}</a>
-         <a href ng-click="expandReplies(item)" style="float: right;">Expand replies:
-           {{item.links.replies[0].count}}</a>
-       </h1>
-       {{item.object.content | html}}
-       <div ng-repeat="reply in item.replies.data.items" style="margin-left: 20px;">
-         <img src="{{reply.actor.thumbnailUrl}}" style="max-height:30px;max-width:30px;"/>
-         <a href="{{reply.actor.profileUrl}}">{{reply.actor.name}}</a>: {{reply.content | html}}
-       </div>
-     </div>
-    </div>
-    </doc:source>
-    <doc:scenario>
-    </doc:scenario>
-    </doc:example>
+ * # Creating a custom 'PUT' request
+ * In this example we create a custom method on our resource to make a PUT request
+ * ```js
+ *		var app = angular.module('app', ['ngResource', 'ngRoute']);
+ *
+ *		// Some APIs expect a PUT request in the format URL/object/ID
+ *		// Here we are creating an 'update' method
+ *		app.factory('Notes', ['$resource', function($resource) {
+ *    return $resource('/notes/:id', null,
+ *        {
+ *            'update': { method:'PUT' }
+ *        });
+ *		}]);
+ *
+ *		// In our controller we get the ID from the URL using ngRoute and $routeParams
+ *		// We pass in $routeParams and our Notes factory along with $scope
+ *		app.controller('NotesCtrl', ['$scope', '$routeParams', 'Notes',
+                                      function($scope, $routeParams, Notes) {
+ *    // First get a note object from the factory
+ *    var note = Notes.get({ id:$routeParams.id });
+ *    $id = note.id;
+ *
+ *    // Now call update passing in the ID first then the object you are updating
+ *    Notes.update({ id:$id }, note);
+ *
+ *    // This will PUT /notes/ID with the note object in the request payload
+ *		}]);
+ * ```
  */
 angular.module('ngResource', ['ng']).
-  factory('$resource', ['$http', '$parse', '$q', function($http, $parse, $q) {
+  factory('$resource', ['$http', '$q', function($http, $q) {
+
     var DEFAULT_ACTIONS = {
       'get':    {method:'GET'},
       'save':   {method:'POST'},
@@ -302,10 +332,7 @@ angular.module('ngResource', ['ng']).
         forEach = angular.forEach,
         extend = angular.extend,
         copy = angular.copy,
-        isFunction = angular.isFunction,
-        getter = function(obj, path) {
-          return $parse(path)(obj);
-        };
+        isFunction = angular.isFunction;
 
     /**
      * We need our custom method because encodeURIComponent is too aggressive and doesn't follow
@@ -376,7 +403,9 @@ angular.module('ngResource', ['ng']).
           val = params.hasOwnProperty(urlParam) ? params[urlParam] : self.defaults[urlParam];
           if (angular.isDefined(val) && val !== null) {
             encodedVal = encodeUriSegment(val);
-            url = url.replace(new RegExp(":" + urlParam + "(\\W|$)", "g"), encodedVal + "$1");
+            url = url.replace(new RegExp(":" + urlParam + "(\\W|$)", "g"), function(match, p1) {
+              return encodedVal + p1;
+            });
           } else {
             url = url.replace(new RegExp("(\/?):" + urlParam + "(\\W|$)", "g"), function(match,
                 leadingSlashes, tail) {
@@ -390,7 +419,7 @@ angular.module('ngResource', ['ng']).
         });
 
         // strip trailing slashes and set the url
-        url = url.replace(/\/+$/, '');
+        url = url.replace(/\/+$/, '') || '/';
         // then replace collapse `/.` if found in the last URL path segment before the query
         // E.g. `http://url.com/id./format?q=x` becomes `http://url.com/id.format?q=x`
         url = url.replace(/\/\.(?=\w+($|\?))/, '.');
@@ -420,7 +449,7 @@ angular.module('ngResource', ['ng']).
         forEach(actionParams, function(value, key){
           if (isFunction(value)) { value = value(); }
           ids[key] = value && value.charAt && value.charAt(0) == '@' ?
-            getter(data, value.substr(1)) : value;
+            lookupDottedPath(data, value.substr(1)) : value;
         });
         return ids;
       }
@@ -430,7 +459,7 @@ angular.module('ngResource', ['ng']).
       }
 
       function Resource(value){
-        copy(value || {}, this);
+        shallowClearAndCopy(value || {}, this);
       }
 
       forEach(actions, function(action, name) {
@@ -476,7 +505,7 @@ angular.module('ngResource', ['ng']).
           }
           /* jshint +W086 */ /* (purposefully fall through case statements) */
 
-          var isInstanceCall = data instanceof Resource;
+          var isInstanceCall = this instanceof Resource;
           var value = isInstanceCall ? data : (action.isArray ? [] : new Resource(data));
           var httpConfig = {};
           var responseInterceptor = action.interceptor && action.interceptor.response ||
@@ -502,7 +531,7 @@ angular.module('ngResource', ['ng']).
             if (data) {
               // Need to convert action.isArray to boolean in case it is undefined
               // jshint -W018
-              if ( angular.isArray(data) !== (!!action.isArray) ) {
+              if (angular.isArray(data) !== (!!action.isArray)) {
                 throw $resourceMinErr('badcfg', 'Error in resource configuration. Expected ' +
                   'response to contain an {0} but got an {1}',
                   action.isArray?'array':'object', angular.isArray(data)?'array':'object');
@@ -514,7 +543,7 @@ angular.module('ngResource', ['ng']).
                   value.push(new Resource(item));
                 });
               } else {
-                copy(data, value);
+                shallowClearAndCopy(data, value);
                 value.$promise = promise;
               }
             }
@@ -559,7 +588,7 @@ angular.module('ngResource', ['ng']).
           if (isFunction(params)) {
             error = success; success = params; params = {};
           }
-          var result = Resource[name](params, this, success, error);
+          var result = Resource[name].call(this, params, this, success, error);
           return result.$promise || result;
         };
       });
