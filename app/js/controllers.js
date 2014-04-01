@@ -2,10 +2,13 @@
 
 /* Controllers */
 
-angular.module('myApp.controllers', []).
-  controller('MyCtrl1', [function() {
+angular.module('myApp.controllers', [])
+  .controller('WatchlistsController', ['$scope', function($scope) {
+    $scope.watchlists = [
+      {name: "my list"}
+    ]
+  }])
+  .controller('CreateWatchlistController', ['$scope', function($scope) {
 
   }])
-  .controller('MyCtrl2', [function() {
-
-  }]);
+;

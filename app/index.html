@@ -1,19 +1,16 @@
 <!doctype html>
-<html lang="en" ng-app="myApp">
+<html lang="en" ng-app="githubWatcher">
 <head>
   <meta charset="utf-8">
-  <title>My AngularJS App</title>
+  <title>Github Watcher</title>
   <link rel="stylesheet" href="css/app.css"/>
 </head>
 <body>
   <ul class="menu">
-    <li><a href="#/view1">view1</a></li>
-    <li><a href="#/view2">view2</a></li>
+    <li><a href="#/watchlists/new">Create A Watchlist</a></li>
   </ul>
 
   <div ng-view></div>
-
-  <div>Angular seed app: v<span app-version></span></div>
 
   <!-- In production use:
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
