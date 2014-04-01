@@ -1,4 +1,6 @@
-# Github Watcher
+# [WORK IN PROGRESS] Github Watcher
+
+
 create dashboards for github projects to watch:
 - time of last commit
 - pull request activity
