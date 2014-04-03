@@ -1,0 +1,8 @@
+{
+  "express": {
+    "port": 8443
+  },
+  "mongo": {
+    "url": "mongodb://localhost/github_watcher_test"
+  }
+}
