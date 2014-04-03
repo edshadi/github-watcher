@@ -1,7 +1,5 @@
 <h1>Welcome to Github Watcher</h1>
 These are your watchlists:
 <div ng-repeat="watchlist in watchlists">
-  <p>
-    {{watchlist.name}}
-  </p>
+  <a href="#/watchlists/{{watchlist._id}}">{{watchlist.name}}</a>
 </div>

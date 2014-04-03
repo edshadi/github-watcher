@@ -3,10 +3,13 @@
 /* Controllers */
 
 angular.module('myApp.controllers', [])
-.controller('WatchlistsController', ['$scope', function($scope) {
-  $scope.watchlists = [
-    {name: "my list"}
-  ]
+.controller('WatchlistsController', ['$scope', '$http', function($scope, $http) {
+  $http.get('/watchlists')
+  .success(function(data, status, headers, config) {
+    $scope.watchlists = data;
+  })
+  .error(function(data, status, headers, config) {
+  })
 }])
 .controller('CreateWatchlistController', ['$scope', '$http', function($scope, $http) {
   $scope.save = function(watchlist) {

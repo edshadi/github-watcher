@@ -29,4 +29,8 @@ Watchlist.prototype.create = function(data, callback) {
     })
   });
 }
+
+Watchlist.prototype.all = function(callback) {
+  WatchlistSchema.find({}, callback);
+}
 module.exports = Watchlist;
