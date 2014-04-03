@@ -25,11 +25,11 @@
     $script([
       'lib/angular/angular.js',
       'lib/angular/angular-route.js',
-      'js/app.js',
-      'js/services.js',
-      'js/controllers.js',
-      'js/filters.js',
-      'js/directives.js'
+      'src/app.js',
+      'src/services.js',
+      'src/controllers.js',
+      'src/filters.js',
+      'src/directives.js'
     ], function() {
       // when all is done, execute bootstrap angular application
       angular.bootstrap(document, ['myApp']);
