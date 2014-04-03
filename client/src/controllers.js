@@ -22,4 +22,13 @@ angular.module('myApp.controllers', [])
     });
   }
 }])
+
+.controller('ShowWatchlistController', ['$scope', '$http', '$routeParams', function($scope, $http, $routeParams) {
+  $http.get('/watchlists/'+$routeParams.name)
+  .success(function(data, status, headers, config) {
+    $scope.watchlist = data;
+  })
+  .error(function(data, status, headers, config) {
+  })
+}])
 ;

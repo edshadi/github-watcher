@@ -12,5 +12,6 @@ angular.module('githubWatcher', [
 config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/watchlists', {templateUrl: 'partials/watchlists/index.html', controller: 'WatchlistsController'});
   $routeProvider.when('/watchlists/new', {templateUrl: 'partials/watchlists/new.html', controller: 'CreateWatchlistController'});
+  $routeProvider.when('/watchlists/:name', {templateUrl: 'partials/watchlists/show.html', controller: 'ShowWatchlistController'});
   $routeProvider.otherwise({redirectTo: '/watchlists'});
 }]);

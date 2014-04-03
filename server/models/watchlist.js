@@ -33,4 +33,8 @@ Watchlist.prototype.create = function(data, callback) {
 Watchlist.prototype.all = function(callback) {
   WatchlistSchema.find({}, callback);
 }
+
+Watchlist.prototype.show = function(name, callback) {
+  WatchlistSchema.findOne({name: name}, callback);
+}
 module.exports = Watchlist;

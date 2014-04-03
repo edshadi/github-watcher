@@ -19,6 +19,7 @@ app.configure( function() {
 });
 app.post('/watchlists', routes.watchlist.create);
 app.get('/watchlists', routes.watchlist.all);
+app.get('/watchlists/:name', routes.watchlist.show);
 app.listen(config.get('express:port'), function() {
   console.log("started node at port "+config.get('express:port'));
 })
