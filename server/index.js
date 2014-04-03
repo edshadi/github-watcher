@@ -13,7 +13,7 @@ app.configure( function() {
   app.use( express.bodyParser() );
   app.use( express.methodOverride() );
   app.use( app.router );
-  app.use( express.static( path.join( application_root, '../app') ) );
+  app.use( express.static( path.join( application_root, '../client') ) );
   app.use( express.errorHandler({ dumpExceptions: true, showStack: true }));
   app.set('port', config.get('express:port'));
 });
