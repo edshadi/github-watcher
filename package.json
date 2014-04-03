@@ -4,7 +4,10 @@
   "repository": "https://github.com/edshadi/github-watcher.git",
   "dependencies": {
     "express": "~3.1.0",
-    "path": "~0.4.9"
+    "path": "~0.4.9",
+    "require-directory": "~1.2.0",
+    "mongoose": "~3.8.8",
+    "nconf": "~0.6.9"
   },
   "devDependencies": {
     "phantomjs": "~1.9",
