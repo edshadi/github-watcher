@@ -5,10 +5,10 @@ module.exports = function (grunt) {
 
     nodemon: {
       dev: {
-        script: './scripts/web-server.js'
+        script: './server/index.js'
       },
       debug: {
-        script: './scripts/web-server.js',
+        script: './server/index.js',
         options: {
           nodeArgs: ['--debug']
         }

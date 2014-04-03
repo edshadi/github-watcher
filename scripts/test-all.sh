@@ -24,7 +24,7 @@ ROOT_DIR=`dirname $0`/..
 cd $ROOT_DIR
 npm install
 
-./scripts/web-server.js > /dev/null &
+./server/index.js > /dev/null &
 WEBSERVER_PID=$!
 
 
