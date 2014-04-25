@@ -1,1 +1,11 @@
 <h1>{{watchlist.name}}</h1>
+<div ng-controller="CreateRepositoryController">
+  <form id="new_repo" ng-submit="addRepo()">
+    <input type="text" name="name" ng-model="repo.name" placeholder="Repo Name">
+    <input type="url" name="url" ng-model="repo.url" placeholder="Repo URL">
+    <input type="submit" name="submit" value="Add Repo">
+  </form>
+  <div class="repos" ng-repeat="repo in watchlist.repos">
+    <a href={{repo.url}}>{{repo.name}}</a>
+  </div>
+</div>

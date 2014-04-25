@@ -3,10 +3,9 @@ var mongoose = require('mongoose'),
     config = require('../configuration')
 ;
 
-mongoose.connection.open(config.get('mongo:url'))
-
 mongoose.model('Watchlist', new Schema({
-  name: { type: String, required: 'name is required', unique: true }
+  name: { type: String, required: 'name is required', unique: true },
+  repos: { type: Array }
 }));
 
 var WatchlistSchema = mongoose.model('Watchlist');
@@ -37,4 +36,14 @@ Watchlist.prototype.all = function(callback) {
 Watchlist.prototype.show = function(name, callback) {
   WatchlistSchema.findOne({name: name}, callback);
 }
+
+Watchlist.prototype.addRepo = function(id, repo, callback) {
+  WatchlistSchema.findOne({_id: id}, function(err, watchlist) {
+    watchlist.repos.push(repo);
+    watchlist.save(function(err) {
+      callback(err, watchlist)
+    })
+  });
+}
+
 module.exports = Watchlist;

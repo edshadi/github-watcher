@@ -22,7 +22,6 @@ angular.module('myApp.controllers', [])
     });
   }
 }])
-
 .controller('ShowWatchlistController', ['$scope', '$http', '$routeParams', function($scope, $http, $routeParams) {
   $http.get('/watchlists/'+$routeParams.name)
   .success(function(data, status, headers, config) {
@@ -31,4 +30,17 @@ angular.module('myApp.controllers', [])
   .error(function(data, status, headers, config) {
   })
 }])
+.controller("CreateRepositoryController", ['$scope', '$http', function($scope, $http) {
+  $scope.addRepo = function() {
+    var url = '/watchlists/' + $scope.watchlist._id + '/repos';
+    $http.post(url, $scope.repo)
+    .success(function(data, status, headers, config) {
+      $scope.watchlist = data;
+    })
+    .error(function(data, status, headers, config) {
+      debugger
+    })
+  }
+}])
+
 ;
