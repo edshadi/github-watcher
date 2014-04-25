@@ -33,7 +33,7 @@ module.exports = function (grunt) {
       },
 
       debug: {
-        tasks: ['nodemon', 'watch', 'node-inspector'],
+        tasks: ['nodemon:debug', 'watch', 'node-inspector'],
         options: {
           logConcurrentOutput: true
         }
